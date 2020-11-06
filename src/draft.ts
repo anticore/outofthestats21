@@ -41,6 +41,10 @@ export async function draft() {
     await parseDefenseFile(fileLocations.defense);
     await parsePitchingFile(fileLocations.pitching);
     await parsePitchesFile(fileLocations.pitches);
+
+    await calcStein();
+
+    console.log(chalk.bold(chalk.green("\nDONE!\n")));
 }
 
 function parseBasicFile(fileLocation: fs.PathLike) {
@@ -389,4 +393,169 @@ function parsePitchesFile(fileLocation: fs.PathLike) {
             setPlayers(DATA).then(() => resolve());
         });
     });
+}
+
+function calcStein() {
+    console.log("Calculating Stein ratings...");
+
+    const formulae = {
+        C: (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.infieldRange * 3.5 +
+                player.fielding.infieldError * 3 +
+                player.baserunning.potStealing
+            );
+        },
+        "1B": (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                (player.fielding.infieldRange * 3.5 +
+                    player.fielding.infieldError * 3 +
+                    player.fielding.infieldArm +
+                    player.fielding.turnDP +
+                    player.baserunning.potStealing) *
+                    0.5
+            );
+        },
+        "2B": (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.infieldRange * 2 +
+                player.fielding.infieldError * 2 +
+                player.fielding.infieldArm +
+                player.fielding.turnDP +
+                player.baserunning.potStealing
+            );
+        },
+        SS: (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.infieldRange * 2 +
+                player.fielding.infieldError * 2 +
+                player.fielding.infieldArm * 2 +
+                player.fielding.turnDP +
+                player.baserunning.potStealing
+            );
+        },
+        "3B": (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.infieldRange * 2 +
+                player.fielding.infieldError * 2 +
+                player.fielding.infieldArm * 2 +
+                player.fielding.turnDP +
+                player.baserunning.potStealing
+            );
+        },
+        LF: (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.outfieldRange * 2.5 +
+                player.fielding.outfieldError +
+                player.fielding.outfieldArm * 2 +
+                player.baserunning.potStealing
+            );
+        },
+        CF: (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.outfieldRange * 5 +
+                player.fielding.outfieldError +
+                player.fielding.outfieldArm +
+                player.baserunning.potStealing
+            );
+        },
+        RF: (player: PlayerData) => {
+            return (
+                player.batting.potContact * 6 +
+                player.batting.potGap * 2 +
+                player.batting.potPower * 5 +
+                player.batting.potEye * 4.5 +
+                player.batting.potAvoidK * 2.5 +
+                player.fielding.outfieldRange * 2.5 +
+                player.fielding.outfieldError +
+                player.fielding.outfieldArm * 2 +
+                player.baserunning.potStealing
+            );
+        },
+        SP: (player: PlayerData) => {
+            return (
+                player.pitching.potStuff * 4 +
+                player.pitching.potMovement * 2.5 +
+                player.pitching.potControl * 3 +
+                player.pitching.stamina * 1.2 +
+                player.pitching.holdRunners * 1.1 +
+                player.pitching.velocity.avg * 2.5
+            );
+        },
+        RP: (player: PlayerData) => {
+            return (
+                player.pitching.potStuff * 4 +
+                player.pitching.potMovement * 2.5 +
+                player.pitching.potControl * 3 +
+                player.pitching.stamina * 1.2 +
+                player.pitching.holdRunners * 1.1 +
+                player.pitching.velocity.avg * 2.5
+            );
+        },
+        CL: (player: PlayerData) => {
+            return (
+                player.pitching.potStuff * 4 +
+                player.pitching.potMovement * 2.5 +
+                player.pitching.potControl * 3 +
+                player.pitching.stamina * 1.2 +
+                player.pitching.holdRunners * 1.1 +
+                player.pitching.velocity.avg * 2.5
+            );
+        },
+    };
+
+    Object.keys(DATA).forEach((playerName: string) => {
+        let player: PlayerData = DATA[playerName];
+
+        if (!formulae[player.position]) {
+            console.log(
+                chalk.yellow(
+                    "formula not found for position " + player.position
+                )
+            );
+            console.log(playerName, player);
+            console.log("\n\n");
+        } else {
+            player.ratings = {
+                stein: formulae[player.position](player),
+            };
+        }
+    });
+
+    setPlayers(DATA);
 }

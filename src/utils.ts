@@ -83,8 +83,14 @@ export function getHSCYear(content: string): HSCYear {
     return HSCYear["CO Junior"];
 }
 
-export function getVelocity(content: string): { min: number; max: number } {
-    return { min: 0, max: 0 };
+export function getVelocity(
+    content: string
+): { min: number; max: number; avg: number } {
+    let min = Number(content.split("-")[0]);
+    let max = Number(content.split("-")[1].split(" ")[0]);
+    let avg = (max - min) / 2;
+
+    return { min, max, avg };
 }
 
 export function getPitcherType(content: string): PitcherType {

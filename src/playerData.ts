@@ -141,7 +141,7 @@ export interface PlayerData {
         potKN: number | null;
         pitches: number;
 
-        velocity: { min: number; max: number };
+        velocity: { min: number; max: number; avg: number };
         slot: ArmSlot;
 
         stamina: number;
@@ -174,5 +174,9 @@ export interface PlayerData {
         BBA: number;
         K: number;
         ERA: number;
+    };
+
+    ratings: {
+        stein: number;
     };
 }
