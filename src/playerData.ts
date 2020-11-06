@@ -64,6 +64,7 @@ export enum PitcherType {
 }
 
 export interface PlayerData {
+    id: number;
     position: PlayerPosition;
     number: number;
     name: string;
@@ -77,6 +78,7 @@ export interface PlayerData {
     injuryProne: Durability;
     signability: Signability;
     accuracy: ScoutAccuracy;
+    school: string;
 
     batting: {
         potContact: number;

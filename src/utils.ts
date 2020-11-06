@@ -1,6 +1,7 @@
 import {
     Bats,
     Durability,
+    HSCYear,
     ScoutAccuracy,
     Signability,
     Throws,
@@ -75,4 +76,8 @@ export function getAccuracy(content: string): ScoutAccuracy {
         default:
             return ScoutAccuracy.Average;
     }
+}
+
+export function getHSCYear(content: string): HSCYear {
+    return HSCYear["CO Junior"];
 }

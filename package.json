@@ -13,9 +13,11 @@
         }
     },
     "dependencies": {
+        "@types/lowdb": "^1.0.9",
         "chalk": "^4.1.0",
         "fs-extra": "^9.0.1",
         "inquirer": "^7.3.3",
+        "lowdb": "^1.0.0",
         "node-html-parser": "^1.4.5"
     },
     "scripts": {

@@ -2,13 +2,16 @@ import path from "path";
 
 import chalk from "chalk";
 import fs from "fs-extra";
+import { LowdbSync } from "lowdb";
 import { parse } from "node-html-parser";
 
+import { addPlayer, setPlayers } from "./db";
 import { Durability, PlayerData, PlayerPosition } from "./playerData";
 import {
     getAccuracy,
     getBats,
     getDurability,
+    getHSCYear,
     getHeight,
     getSignability,
     getThrows,
@@ -44,8 +47,10 @@ function parseBasicFile(fileLocation: fs.PathLike) {
         let basicParse = parse(data);
         let rows = basicParse.querySelectorAll("tr");
 
-        rows.filter((_, index) => index > 1).forEach((row) => {
+        rows.filter((_, index) => index > 2).forEach((row, index) => {
             let player: any = {};
+
+            player.index = index;
 
             row.childNodes.forEach((child, index) => {
                 let content = child.rawText;
@@ -67,10 +72,62 @@ function parseBasicFile(fileLocation: fs.PathLike) {
 
             DATA[player.name] = player;
         });
+
+        setPlayers(DATA);
     });
 }
 
-function parseStatsFile(fileLocation: fs.PathLike) {}
+function parseStatsFile(fileLocation: fs.PathLike) {
+    console.log("Parsing stats data...");
+
+    fs.readFile(fileLocation, "utf8", (err, data) => {
+        let statsParse = parse(data);
+        let rows = statsParse.querySelectorAll("tr");
+
+        rows.filter((_, index) => index > 2).forEach((row, index) => {
+            let player: any = {};
+
+            row.childNodes.forEach((child, index) => {
+                let content = child.rawText;
+
+                if (index == 7) {
+                    player = DATA[content];
+                    player.stats = {};
+                }
+                if (index == 17) player.school = content;
+                if (index == 19) player.stats.competition = content;
+                if (index == 21) player.stats.hsc = getHSCYear(content);
+                if (index == 23) player.stats.G = content ? Number(content) : 0;
+                if (index == 25) player.stats.PA = Number(content);
+                if (index == 27) player.stats.AB = Number(content);
+                if (index == 29) player.stats.H = Number(content);
+                if (index == 31) player.stats.HR = Number(content);
+                if (index == 33) player.stats.RBI = Number(content);
+                if (index == 35) player.stats.BB = Number(content);
+                if (index == 37) player.stats.SO = Number(content);
+                if (index == 39) player.stats.AVG = Number(content);
+                if (index == 41) player.stats.OBP = Number(content);
+                if (index == 43) player.stats.SLG = Number(content);
+                if (index == 45) player.stats.OPS = Number(content);
+                if (index == 47) player.stats.GP = Number(content);
+                if (index == 49) player.stats.GS = Number(content);
+                if (index == 51) player.stats.W = Number(content);
+                if (index == 53) player.stats.L = Number(content);
+                if (index == 55) player.stats.SV = Number(content);
+                if (index == 57) player.stats.IP = Number(content);
+                if (index == 59) player.stats.HA = Number(content);
+                if (index == 61) player.stats.HRA = Number(content);
+                if (index == 63) player.stats.BBA = Number(content);
+                if (index == 65) player.stats.K = Number(content);
+                if (index == 67) player.stats.ERA = Number(content);
+            });
+
+            DATA[player.name] = player;
+        });
+
+        setPlayers(DATA);
+    });
+}
 
 function parseBattingFile(fileLocation: fs.PathLike) {}
 
