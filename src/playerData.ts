@@ -91,10 +91,23 @@ export interface PlayerData {
     baserunning: {
         potSpeed: number;
         potStealing: number;
-        potBserunning: number;
+        potBaserunning: number;
+    };
+
+    fielding: {
+        infieldRange: number;
+        infieldArm: number;
+        turnDP: number;
+        infieldError: number;
+        outfieldRange: number;
+        outfieldArm: number;
+        outfieldError: number;
+        catcherArm: number;
+        catcherAbility: number;
     };
 
     defense: {
+        def: number;
         p: number;
         fb: number;
         sb: number;

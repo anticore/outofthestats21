@@ -2,6 +2,7 @@ import {
     Bats,
     Durability,
     HSCYear,
+    PitcherType,
     ScoutAccuracy,
     Signability,
     Throws,
@@ -80,4 +81,12 @@ export function getAccuracy(content: string): ScoutAccuracy {
 
 export function getHSCYear(content: string): HSCYear {
     return HSCYear["CO Junior"];
+}
+
+export function getVelocity(content: string): { min: number; max: number } {
+    return { min: 0, max: 0 };
+}
+
+export function getPitcherType(content: string): PitcherType {
+    return PitcherType["EX FB"];
 }

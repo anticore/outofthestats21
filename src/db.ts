@@ -8,12 +8,14 @@ const db = low(adapter);
 
 db.defaults({ players: {}, playerCount: 0 }).write();
 
-export function addPlayer(playerName: string, player: PlayerData) {
-    db.set("players." + playerName, player).write();
-    db.update("playerCount", (n) => n + 1).write();
+export async function addPlayer(playerName: string, player: PlayerData) {
+    await db.set("players." + playerName, player).write();
+    await db.update("playerCount", (n) => n + 1).write();
 }
 
-export function setPlayers(players: { [playerName: string]: PlayerData }) {
-    db.set("players", players).write();
-    db.set("playerCount", Object.keys(players).length).write();
+export async function setPlayers(players: {
+    [playerName: string]: PlayerData;
+}) {
+    await db.set("players", players).write();
+    await db.set("playerCount", Object.keys(players).length).write();
 }
