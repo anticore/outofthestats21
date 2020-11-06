@@ -4,6 +4,7 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import { parse } from "node-html-parser";
 
+import { writeDraftToCSV } from "./csv";
 import { setPlayers } from "./db";
 import { PlayerData, PlayerPosition } from "./playerData";
 import {
@@ -45,6 +46,8 @@ export async function draft() {
     await calcStein();
 
     console.log(chalk.bold(chalk.green("\nDONE!\n")));
+
+    await writeDraftToCSV();
 }
 
 function parseBasicFile(fileLocation: fs.PathLike) {

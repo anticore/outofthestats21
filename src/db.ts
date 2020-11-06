@@ -4,7 +4,7 @@ import FileSync from "lowdb/adapters/FileSync";
 import { PlayerData } from "./playerData";
 
 const adapter = new FileSync("db.json");
-const db = low(adapter);
+export const db = low(adapter);
 
 db.defaults({ players: {}, playerCount: 0 }).write();
 
