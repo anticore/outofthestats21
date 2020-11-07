@@ -2,10 +2,22 @@ import path from "path";
 
 import chalk from "chalk";
 import fs from "fs-extra";
+import inquirer from "inquirer";
+import _ from "lodash";
 import { parse } from "node-html-parser";
 
-import { writeDraftToCSV } from "./csv";
-import { setPlayers } from "./db";
+import { db, setPlayers } from "./db";
+import {
+    rateDraft1B,
+    rateDraft2B,
+    rateDraft3B,
+    rateDraftC,
+    rateDraftCF,
+    rateDraftLF,
+    rateDraftP,
+    rateDraftRF,
+    rateDraftSS,
+} from "./formulae";
 import { PlayerData, PlayerPosition } from "./playerData";
 import {
     getAccuracy,
@@ -42,12 +54,27 @@ export async function draft() {
     await parseDefenseFile(fileLocations.defense);
     await parsePitchingFile(fileLocations.pitching);
     await parsePitchesFile(fileLocations.pitches);
+    console.log(chalk.bold(chalk.green("Done parsing.\n")));
 
-    await calcStein();
+    await calcRatings();
+    console.log(chalk.bold(chalk.green("Done calculating ratings.\n")));
 
-    console.log(chalk.bold(chalk.green("\nDONE!\n")));
-
-    await writeDraftToCSV();
+    inquirer
+        .prompt({
+            type: "list",
+            name: "action",
+            message: "What to do with the results?",
+            choices: ["Print"],
+            filter: function (val) {
+                return val.toLowerCase();
+            },
+        })
+        .then(({ action }) => {
+            switch (action) {
+                case "print":
+                    return printBest(20, 30);
+            }
+        });
 }
 
 function parseBasicFile(fileLocation: fs.PathLike) {
@@ -398,167 +425,122 @@ function parsePitchesFile(fileLocation: fs.PathLike) {
     });
 }
 
-function calcStein() {
-    console.log("Calculating Stein ratings...");
+function calcRatings() {
+    console.log("Calculating draft ratings...");
 
-    const formulae = {
-        C: (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.infieldRange * 3.5 +
-                player.fielding.infieldError * 3 +
-                player.baserunning.potStealing
-            );
-        },
-        "1B": (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                (player.fielding.infieldRange * 3.5 +
-                    player.fielding.infieldError * 3 +
-                    player.fielding.infieldArm +
-                    player.fielding.turnDP +
-                    player.baserunning.potStealing) *
-                    0.5
-            );
-        },
-        "2B": (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.infieldRange * 2 +
-                player.fielding.infieldError * 2 +
-                player.fielding.infieldArm +
-                player.fielding.turnDP +
-                player.baserunning.potStealing
-            );
-        },
-        SS: (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.infieldRange * 2 +
-                player.fielding.infieldError * 2 +
-                player.fielding.infieldArm * 2 +
-                player.fielding.turnDP +
-                player.baserunning.potStealing
-            );
-        },
-        "3B": (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.infieldRange * 2 +
-                player.fielding.infieldError * 2 +
-                player.fielding.infieldArm * 2 +
-                player.fielding.turnDP +
-                player.baserunning.potStealing
-            );
-        },
-        LF: (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.outfieldRange * 2.5 +
-                player.fielding.outfieldError +
-                player.fielding.outfieldArm * 2 +
-                player.baserunning.potStealing
-            );
-        },
-        CF: (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.outfieldRange * 5 +
-                player.fielding.outfieldError +
-                player.fielding.outfieldArm +
-                player.baserunning.potStealing
-            );
-        },
-        RF: (player: PlayerData) => {
-            return (
-                player.batting.potContact * 6 +
-                player.batting.potGap * 2 +
-                player.batting.potPower * 5 +
-                player.batting.potEye * 4.5 +
-                player.batting.potAvoidK * 2.5 +
-                player.fielding.outfieldRange * 2.5 +
-                player.fielding.outfieldError +
-                player.fielding.outfieldArm * 2 +
-                player.baserunning.potStealing
-            );
-        },
-        SP: (player: PlayerData) => {
-            return (
-                player.pitching.potStuff * 4 +
-                player.pitching.potMovement * 2.5 +
-                player.pitching.potControl * 3 +
-                player.pitching.stamina * 1.2 +
-                player.pitching.holdRunners * 1.1 +
-                player.pitching.velocity.avg * 2.5
-            );
-        },
-        RP: (player: PlayerData) => {
-            return (
-                player.pitching.potStuff * 4 +
-                player.pitching.potMovement * 2.5 +
-                player.pitching.potControl * 3 +
-                player.pitching.stamina * 1.2 +
-                player.pitching.holdRunners * 1.1 +
-                player.pitching.velocity.avg * 2.5
-            );
-        },
-        CL: (player: PlayerData) => {
-            return (
-                player.pitching.potStuff * 4 +
-                player.pitching.potMovement * 2.5 +
-                player.pitching.potControl * 3 +
-                player.pitching.stamina * 1.2 +
-                player.pitching.holdRunners * 1.1 +
-                player.pitching.velocity.avg * 2.5
-            );
-        },
+    const formulae: { [position: string]: (player: PlayerData) => number } = {
+        c: rateDraftC,
+        fb: rateDraft1B,
+        sb: rateDraft2B,
+        ss: rateDraftSS,
+        tb: rateDraft3B,
+        lf: rateDraftLF,
+        cf: rateDraftCF,
+        rf: rateDraftRF,
+        p: rateDraftP,
     };
 
-    Object.keys(DATA).forEach((playerName: string) => {
-        let player: PlayerData = DATA[playerName];
+    Object.values(DATA).forEach((player: PlayerData) => {
+        player.ratings = {
+            custom: {
+                total: 0,
+            },
+        };
 
-        if (!formulae[player.position]) {
-            console.log(
-                chalk.yellow(
-                    "formula not found for position " + player.position
-                )
-            );
-            console.log(playerName, player);
-            console.log("\n\n");
-        } else {
-            player.ratings = {
-                stein: formulae[player.position](player),
-            };
-        }
+        if (player.name)
+            Object.keys(formulae).forEach((position: string) => {
+                (player.ratings.custom as any)[position] = formulae[position](
+                    player
+                );
+                player.ratings.custom.total = player.ratings.custom.total
+                    ? player.ratings.custom.total + formulae[position](player)
+                    : formulae[position](player);
+            });
     });
 
     setPlayers(DATA);
+}
+
+async function printBest(amount: number, totalAmount: number) {
+    console.log(
+        chalk.bold(chalk.blueBright("\nHere are the best rated players:"))
+    );
+
+    let players: PlayerData[] = Object.values(DATA).filter(
+        (player) => !!player.name
+    );
+
+    function sortByRating(ps: PlayerData[], r: string) {
+        return ps.sort(function (a, b) {
+            let kA = (a.ratings.custom as any)[r];
+            let kB = (b.ratings.custom as any)[r];
+
+            if (kA > kB) return -1;
+            if (kA < kB) return 1;
+            return 0;
+        });
+    }
+
+    console.log("\n");
+    console.log(chalk.bold("Catcher"));
+    _.take(sortByRating(players, "c"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name} [${player.ratings.custom.c}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("First base"));
+    _.take(sortByRating(players, "fb"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name} [${player.ratings.custom.fb}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Second base"));
+    _.take(sortByRating(players, "sb"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name} [${player.ratings.custom.sb}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Shortstop"));
+    _.take(sortByRating(players, "ss"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name} [${player.ratings.custom.ss}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Third base"));
+    _.take(sortByRating(players, "tb"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name} [${player.ratings.custom.tb}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Left field"));
+    _.take(sortByRating(players, "lf"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name}  [${player.ratings.custom.lf}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Center field"));
+    _.take(sortByRating(players, "cf"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name}  [${player.ratings.custom.cf}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Right field"));
+    _.take(sortByRating(players, "rf"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name}  [${player.ratings.custom.rf}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Pitcher"));
+    _.take(sortByRating(players, "p"), amount).forEach((player: PlayerData) =>
+        console.log(`${player.name}  [${player.ratings.custom.p}]`)
+    );
+
+    console.log("\n");
+    console.log(chalk.bold("Total"));
+    _.take(
+        sortByRating(players, "total"),
+        totalAmount
+    ).forEach((player: PlayerData) =>
+        console.log(`${player.name}  [${player.ratings.custom.total}]`)
+    );
 }

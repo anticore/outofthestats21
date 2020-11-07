@@ -125,7 +125,7 @@ export interface PlayerData {
         potStuff: number;
         potMovement: number;
         potControl: number;
-        holdRunners: number;
+        hold: number;
 
         potFB: number | null;
         potCHP: number | null;
@@ -177,6 +177,17 @@ export interface PlayerData {
     };
 
     ratings: {
-        stein: number;
+        custom: {
+            c?: number;
+            fb?: number;
+            sb?: number;
+            ss?: number;
+            tb?: number;
+            lf?: number;
+            cf?: number;
+            rf?: number;
+            p?: number;
+            total?: number;
+        };
     };
 }
