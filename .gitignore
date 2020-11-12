@@ -103,6 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-reports/
-db.json
-draft.csv
+data/
+report.*

@@ -2,112 +2,112 @@ import { PlayerData } from "./playerData";
 
 export function rateOffense(player: PlayerData) {
     return (
-        player.batting.potContact * 6 +
-        player.batting.potGap * 2 +
-        player.batting.potPower * 5 +
-        player.batting.potEye * 4.5 +
-        player.batting.potAvoidK * 2.5
+        player.contactPot * 6 +
+        player.gapPot * 2 +
+        player.powerPot * 5 +
+        player.eyePot * 4.5 +
+        player.avoidKsPot * 2.5
     );
 }
 
-export function rateDraftC(player: PlayerData) {
+export function rateC(player: PlayerData) {
     return (
         rateOffense(player) +
-        player.fielding.catcherAbility * 3.5 +
-        player.fielding.catcherArm * 1.5 +
-        player.baserunning.potStealing
+        player.catcherAbility * 3.5 +
+        player.catcherArm * 1.5 +
+        player.stealing
     );
 }
 
-export function rateDraft1B(player: PlayerData) {
+export function rate1B(player: PlayerData) {
     return (
         rateOffense(player) +
         player.height +
-        (player.fielding.infieldRange * 3.5 +
-            player.fielding.infieldError * 3 +
-            player.fielding.infieldArm +
-            player.fielding.turnDP +
-            player.baserunning.potStealing) *
+        (player.infRange * 3.5 +
+            player.infError * 3 +
+            player.infArm +
+            player.turnDP +
+            player.stealing) *
             0.5
     );
 }
 
-export function rateDraft2B(player: PlayerData) {
+export function rate2B(player: PlayerData) {
     if (player.throws == "L") return 0;
 
     return (
         rateOffense(player) +
-        player.fielding.infieldRange * 2 +
-        player.fielding.infieldError * 2 +
-        player.fielding.infieldArm +
-        player.fielding.turnDP +
-        player.baserunning.potStealing
+        player.infRange * 2 +
+        player.infError * 2 +
+        player.infArm +
+        player.turnDP +
+        player.stealing
     );
 }
 
-export function rateDraftSS(player: PlayerData) {
+export function rateSS(player: PlayerData) {
     if (player.throws == "L") return 0;
 
     return (
         rateOffense(player) +
-        player.fielding.infieldRange * 3 +
-        player.fielding.infieldError * 2 +
-        player.fielding.infieldArm * 2 +
-        player.fielding.turnDP +
-        player.baserunning.potStealing
+        player.infRange * 3 +
+        player.infError * 2 +
+        player.infArm * 2 +
+        player.turnDP +
+        player.stealing
     );
 }
 
-export function rateDraft3B(player: PlayerData) {
+export function rate3B(player: PlayerData) {
     if (player.throws == "L") return 0;
 
     return (
         rateOffense(player) +
-        player.fielding.infieldRange * 2 +
-        player.fielding.infieldError * 2 +
-        player.fielding.infieldArm * 2 +
-        player.fielding.turnDP +
-        player.baserunning.potStealing
+        player.infRange * 2 +
+        player.infError * 2 +
+        player.infArm * 2 +
+        player.turnDP +
+        player.stealing
     );
 }
 
-export function rateDraftLF(player: PlayerData) {
+export function rateLF(player: PlayerData) {
     return (
         rateOffense(player) +
-        player.fielding.outfieldRange * 2.5 +
-        player.fielding.outfieldError +
-        player.fielding.outfieldArm * 2 +
-        player.baserunning.potStealing
+        player.outfRange * 2.5 +
+        player.outfError +
+        player.outfArm * 2 +
+        player.stealing
     );
 }
 
-export function rateDraftCF(player: PlayerData) {
+export function rateCF(player: PlayerData) {
     return (
         rateOffense(player) +
-        player.fielding.outfieldRange * 5 +
-        player.fielding.outfieldError +
-        player.fielding.outfieldArm +
-        player.baserunning.potStealing
+        player.outfRange * 5 +
+        player.outfError +
+        player.outfArm +
+        player.stealing
     );
 }
 
-export function rateDraftRF(player: PlayerData) {
+export function rateRF(player: PlayerData) {
     return (
         rateOffense(player) +
-        player.fielding.outfieldRange * 2.5 +
-        player.fielding.outfieldError +
-        player.fielding.outfieldArm * 2 +
-        player.baserunning.potStealing
+        player.outfRange * 2.5 +
+        player.outfError +
+        player.outfArm * 2 +
+        player.stealing
     );
 }
 
-export function rateDraftP(player: PlayerData) {
+export function rateP(player: PlayerData) {
     return (
-        player.pitching.potStuff * 4 +
-        player.pitching.potMovement * 2.5 +
-        player.pitching.potControl * 3 +
-        player.pitching.stamina * 1.2 +
-        player.pitching.hold * 1.1 +
-        player.pitching.velocity.avg * 2.5
+        player.stuffPot * 4 +
+        player.movementPot * 2.5 +
+        player.controlPot * 3 +
+        player.stamina * 1.2 +
+        player.hold * 1.1 +
+        player.velocity.avg * 2.5
     );
 }
